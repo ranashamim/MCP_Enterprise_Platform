@@ -42,6 +42,33 @@ class TicketRepository:
         finally:
             connection.close()
 
+    def list_tickets(self) -> list[dict] :
+        connection = sqlite3.connect(self.db_path)
+        connection.row_factory = sqlite3.Row
+        try:
+            cursor = connection.execute(
+                "select * from tickets"
+            )
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            connection.close()
 
+    def update_ticket(self, ticket_id: str, priority: str) -> dict | None:
+        connection = sqlite3.connect(self.db_path)
+        connection.row_factory = sqlite3.Row
+        try:
+            connection.execute(
+                "UPDATE tickets SET priority = ? WHERE ticket_id = ?", (priority, ticket_id)
+            )
+            connection.commit()
+        finally:
+            connection.close()
+
+        ticket = self.get_ticket(ticket_id= ticket_id)
+        if ticket is None:
+            return None
+        return dict(ticket)
+        
 
 

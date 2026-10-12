@@ -8,9 +8,17 @@ ticket_repository = TicketRepository('tickets.db')
 ticket_service = TicketService(ticket_repository=ticket_repository)
 
 try:
-    ticket = ticket_service.create_ticket('T011', 'C002', 'it doesnot work', 'low')
+    connection = sqlite3.connect('tickets.db')
+    
+    cursor = connection.execute(
+            "select * from tickets where status = 'open' "
+    )
+    tickets = cursor.fetchall()
+
 except ValueError as e:
     print(f"Error creating ticket: {e}")
+finally:
+     connection.close()
 
-print(ticket)
+print(tickets)
 
