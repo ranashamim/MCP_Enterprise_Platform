@@ -69,6 +69,21 @@ class TicketRepository:
         if ticket is None:
             return None
         return dict(ticket)
+
+    def close_ticket(self, ticket_id: str) -> dict | None:
+        connection = sqlite3.connect(self.db_path)
+        connection.row_factory = sqlite3.Row
+        try:
+            connection.execute(
+                "update tickets set status = 'closed' where ticket_id = ?", (ticket_id,)
+            )
+            connection.commit()
+        finally:
+            connection.close()
         
+        ticket = self.get_ticket(ticket_id= ticket_id)
+        if ticket is None:
+            return None
+        return dict(ticket)
 
 

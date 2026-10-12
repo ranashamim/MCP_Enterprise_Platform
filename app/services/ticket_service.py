@@ -1,3 +1,5 @@
+import sqlite3
+
 from app.repositories.ticket_repository import TicketRepository
 
 
@@ -11,17 +13,27 @@ class TicketService:
             raise ValueError("Priority must be low, medium, or high.")
 
     def create_ticket(self, ticket_id:str, customer_id:str, description:str, priority:str) -> dict | None:
-        self.validate_priority(priority=priority)
-        ticket = self.ticket_repository.create_ticket(
-            ticket_id=ticket_id, customer_id=customer_id, description=description, priority=priority
-            )
-        return ticket
+        try:
+            self.validate_priority(priority=priority)
+            ticket = self.ticket_repository.create_ticket(
+                ticket_id=ticket_id, customer_id=customer_id, description=description, priority=priority
+                )
+            return ticket
+        except sqlite3.IntegrityError as exc:
+            if "UNIQUE constraint failed: tickets.ticket_id" in str(exc):
+                raise ValueError("A ticket with this ID already exists.") from exc
+
+            raise ValueError(
+                "Could not create ticket because a database constraint was violated."
+            ) from exc
+    
 
     def get_ticket(self, ticket_id:str) -> dict | None:
         ticket = self.ticket_repository.get_ticket(ticket_id=ticket_id)
         if ticket is not None:
             return dict(ticket)
-        return ticket
+        
+        raise ValueError(f"Ticket '{ticket_id}' does not exist.")
 
     def list_tickets(self) -> list[dict]:
         tickets = self.ticket_repository.list_tickets()
@@ -35,4 +47,16 @@ class TicketService:
             ticket_id=ticket_id,
             priority=priority,
         )
+
+        if ticket is None:
+            raise ValueError(f"Ticket '{ticket_id}' does not exist.")
+        
+        return ticket
+
+    def close_ticket(self, ticket_id:str) -> dict | None:
+        ticket = self.ticket_repository.close_ticket(ticket_id=ticket_id)
+
+        if ticket is None:
+            raise ValueError(f"Ticket '{ticket_id}' does not exist.")
+
         return ticket

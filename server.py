@@ -1,7 +1,7 @@
 from mcp.server import MCPServer
 from app.repositories.ticket_repository import TicketRepository
 from app.services.ticket_service import TicketService
-
+from mcp.server.mcpserver.exceptions import ToolError
 
 mcp = MCPServer("Enterprise Platform")
 
@@ -22,14 +22,20 @@ def multiply(a:int, b:int) -> int:
 @mcp.tool()
 def create_ticket(ticket_id: str, customer_id: str, description: str, priority: str) -> dict | None:
     """Create a support ticket."""
-    ticket = ticket_ser.create_ticket(ticket_id=ticket_id, customer_id=customer_id, description=description, priority=priority)
-    return ticket
+    try:
+        ticket = ticket_ser.create_ticket(ticket_id=ticket_id, customer_id=customer_id, description=description, priority=priority)
+        return ticket
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
 
 @mcp.tool()
 def get_ticket(ticket_id:str) -> dict | None:
     """Get a ticket"""
-    ticket = ticket_ser.get_ticket(ticket_id=ticket_id)
-    return ticket
+    try:
+        ticket = ticket_ser.get_ticket(ticket_id=ticket_id)
+        return ticket
+    except ValueError as exc:
+                raise ToolError(str(exc)) from exc
 
 @mcp.tool()
 def list_tickets() -> list[dict]:
@@ -40,5 +46,18 @@ def list_tickets() -> list[dict]:
 @mcp.tool()
 def update_ticket(ticket_id:str, priority:str) -> dict | None:
     """Update priority of ticket"""
-    ticket = ticket_ser.update_ticket(ticket_id=ticket_id, priority=priority)
-    return ticket
+    try:
+        ticket = ticket_ser.update_ticket(ticket_id=ticket_id, priority=priority)
+        return ticket
+    except ValueError as exc:
+            raise ToolError(str(exc)) from exc
+    
+
+@mcp.tool()
+def close_ticket(ticket_id:str) -> dict | None:
+    """Close a ticket"""
+    try:
+        ticket = ticket_ser.close_ticket(ticket_id=ticket_id)
+        return ticket
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
