@@ -9,6 +9,7 @@ ticket_rep = TicketRepository("tickets.db")
 ticket_rep.initialize()
 ticket_ser = TicketService(ticket_repository=ticket_rep)
 
+# MCP Tools
 @mcp.tool()
 def add(a: int, b: int) -> int:
     """Add two numbers."""
@@ -61,3 +62,28 @@ def close_ticket(ticket_id:str) -> dict | None:
         return ticket
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
+
+# MCP resources
+@mcp.resource("ticket://{ticket_id}")
+def get_ticket_resource(ticket_id: str):
+    """Get a ticket with its ticket_id"""
+    try:
+        ticket = ticket_ser.get_ticket(ticket_id=ticket_id)
+        return ticket
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
+
+
+# MCP prompt
+@mcp.prompt()
+def summarize_ticket(ticket_id: str):
+    return f"""
+    Summarize support ticket {ticket_id}.
+    Identify its priority, status, and key details.
+    Recommend the next action.
+    """
+
+
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
