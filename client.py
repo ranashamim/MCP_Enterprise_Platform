@@ -78,7 +78,7 @@ async def main():
                     break
                 
                 tool = next((item for item in result.tools if item.name == tool_name),None,)
-                if(tool):
+                if(tool != None):
                     arguments = collect_arguments(tool=tool)
                     print(f"Arguments: {arguments}")
                     
@@ -87,17 +87,16 @@ async def main():
                         tool_name=tool_name,
                         arguments=arguments
                     )
+                    print("result: ")
+                    print(response.structured_content['result'])
                 else:
                     print("the tool isn't available.")
 
-                print("result: ")
-                print(response.structured_content['result'])
-                return response
+                
             
            
             
 
         
-
 if __name__ == "__main__":
     asyncio.run(main())
